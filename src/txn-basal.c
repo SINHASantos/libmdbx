@@ -272,13 +272,16 @@ int txn_basal_commit(MDBX_txn *txn, struct commit_timestamp *ts) {
   if (likely(rc == MDBX_SUCCESS))
     rc = gc_update(txn, &gcu_ctx);
 
+  const txnid_t commit_txnid =
 #if MDBX_ENABLE_BIGFOOT
-  const txnid_t commit_txnid = gcu_ctx.bigfoot;
-  if (commit_txnid > txn->txnid)
-    TRACE("use @%" PRIaTXN " (+%zu) for commit bigfoot-txn", commit_txnid, (size_t)(commit_txnid - txn->txnid));
+      gcu_ctx.bigfoot;
 #else
-  const txnid_t commit_txnid = txn->txnid;
-#endif
+      txn->txnid;
+#endif /* MDBX_ENABLE_BIGFOOT */
+  if (commit_txnid > txn->txnid)
+    VERBOSE("use @%" PRIaTXN " (+%zu) for committing bigfoot-txn", commit_txnid, (size_t)(commit_txnid - txn->txnid));
+  else
+    VERBOSE("committing @%" PRIaTXN "txn", commit_txnid);
   gc_put_destroy(&gcu_ctx);
 
   if (ts)
