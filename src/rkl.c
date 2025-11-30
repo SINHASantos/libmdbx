@@ -172,7 +172,7 @@ static inline txnid_t list_remove_first(rkl_t *rkl) {
     size_t i = 0;
     do
       rkl->list[i] = rkl->list[i + 1];
-    while (++i <= rkl->list_length);
+    while (++i < rkl->list_length);
   }
   return first;
 }
