@@ -557,7 +557,7 @@ static void WINAPI ior_wocr(DWORD err, DWORD bytes, OVERLAPPED *ov) {
 }
 
 #elif MDBX_HAVE_PWRITEV
-#if defined(_SC_IOV_MAX)
+#if defined(_SC_IOV_MAX) || defined(ENABLE_MEMCHECK)
 static size_t osal_iov_max;
 #define OSAL_IOV_MAX osal_iov_max
 #else
@@ -3511,12 +3511,16 @@ const char *osal_getenv(const char *name, bool secure) {
 /*--------------------------------------------------------------------------*/
 
 void osal_ctor(void) {
-#if MDBX_HAVE_PWRITEV && defined(_SC_IOV_MAX)
-  osal_iov_max = sysconf(_SC_IOV_MAX);
+#if MDBX_HAVE_PWRITEV && (defined(_SC_IOV_MAX) || defined(ENABLE_MEMCHECK))
+#if defined(_SC_IOV_MAX)
+  osal_iov_max = (_SC_IOV_MAX);
+#else
+  osal_iov_max = IOV_MAX;
+#endif /* _SC_IOV_MAX */
   if (RUNNING_ON_VALGRIND && osal_iov_max > 64)
     /* чтобы не описывать все 1024 исключения в valgrind_suppress.txt */
     osal_iov_max = 64;
-#endif /* MDBX_HAVE_PWRITEV && _SC_IOV_MAX */
+#endif /* MDBX_HAVE_PWRITEV */
 
 #if defined(_WIN32) || defined(_WIN64)
   SYSTEM_INFO si;
