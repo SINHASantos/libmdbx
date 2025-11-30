@@ -442,6 +442,7 @@ static bool stochastic_pass_hole(size_t set, size_t trims) {
     }
   }
 
+  rkl_destroy(&rkl);
   return true;
 }
 
