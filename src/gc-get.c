@@ -985,8 +985,9 @@ next_gc:
 
   pgno_t *gc_pnl = (pgno_t *)data.iov_base;
   if (unlikely(data.iov_len % sizeof(pgno_t) || data.iov_len < MDBX_PNL_SIZEOF(gc_pnl) ||
+               (MDBX_UNALIGNED_OK < sizeof(pgno_t) && (size_t)data.iov_base % sizeof(pgno_t)) ||
                !pnl_check(gc_pnl, txn->geo.first_unallocated))) {
-    ERROR("%s/%d: %s", "MDBX_CORRUPTED", MDBX_CORRUPTED, "invalid GC value-length");
+    ERROR("%s/%d: %s", "MDBX_CORRUPTED", MDBX_CORRUPTED, "invalid length/align of GC-record");
     ret.err = MDBX_CORRUPTED;
     goto fail;
   }
