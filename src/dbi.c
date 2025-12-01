@@ -462,7 +462,13 @@ static int dbi_open_locked(MDBX_txn *txn, cursor_couple_t *maindb_cx, unsigned u
     return MDBX_PROBLEM;
 
   /* Find the DB info */
+#if defined(ENABLE_MEMCHECK) || defined(__SANITIZE_ADDRESS__)
+  void *preserve_userctx = maindb_cx->userctx;
+#endif /* MEMCHECK || ASAN */
   rc = tbl_fetch(txn, &maindb_cx->outer, slot, &name, user_flags);
+#if defined(ENABLE_MEMCHECK) || defined(__SANITIZE_ADDRESS__)
+  maindb_cx->userctx = preserve_userctx;
+#endif /* MEMCHECK || ASAN */
   if (unlikely(rc != MDBX_SUCCESS)) {
     if (rc != MDBX_NOTFOUND || !(user_flags & MDBX_CREATE))
       return rc;
