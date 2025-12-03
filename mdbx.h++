@@ -1090,7 +1090,7 @@ template <typename T, typename A> struct move_assign_alloc<T, A, true> {
     return allocator_is_always_equal<A>() || ::std::is_nothrow_move_assignable<A>::value;
   }
   static constexpr bool is_moveable(T *, T &) noexcept { return true; }
-  static MDBX_CXX20_CONSTEXPR void propagate(T *target, T &source) {
+  static MDBX_CXX20_CONSTEXPR void propagate(T *target, T &source) noexcept {
     target->get_allocator() = ::std::move(source.get_allocator());
   }
 };
